@@ -60,7 +60,8 @@ dev_dependencies:
   flutter_easyloading: ^3.0.3
   flutter_sim_country_code: ^0.1.2
   isolate: ^2.0.2
-
+  provider: ^6.0.0
+  loading_animation_widget: ^1.2.0+4
   flutter_cupertino_datetime_picker: ^3.0.0
 
   #IOS ATT
