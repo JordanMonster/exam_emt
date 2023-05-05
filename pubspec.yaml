@@ -64,6 +64,7 @@ dev_dependencies:
   logger: ^1.2.1
   loading_animation_widget: ^1.2.0+4
   flutter_cupertino_datetime_picker: ^3.0.0
+  google_mobile_ads: ^3.0.0
 
   #IOS ATT
   app_tracking_transparency: ^2.0.2+4
