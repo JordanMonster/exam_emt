@@ -32,6 +32,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   final HomeStr resStr = HomeStr();
   CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _selectDay = DateTime.now();
+  int count = 1;
 
   @override
   void initState() {
@@ -306,7 +307,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             color: Colors.red,
             style: TextStyle(
                 fontWeight: FontWeight.bold, fontSize: HYSizeFit.sethRpx(16)),
-            onTap: () {}),
+            onTap: () {
+              _goToWrongQuiz();
+            }),
         HomeItemWidget(
             text: "Simulation Quiz",
             icon: Icons.question_answer,
@@ -325,6 +328,28 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             onTap: () {}),
       ],
     );
+  }
+
+  _goToWrongQuiz(){
+
+    DBManager.getInstance().countMistakeQuestions().then((value) {
+      List<Widget> widgets = [];
+      for (int i = 1; i <= value!; i++) {
+        widgets.add(Container(
+          child: Text(i.toString()),
+          margin: const EdgeInsets.all(2),
+        ));
+      }
+
+      showNumbSelectDialog(context, "Wrong Question Quiz",
+          "Retake Wrong Question", widgets, (int index) {
+            count = index + 1;
+          }, () {
+            Navigator.of(navigatorKey.currentState!.context).pushNamed(
+                questionScreen,
+                arguments: ListModel.getWrong(count: count));
+          });
+    });
   }
 
   _goToSingleSubjectScreen() async {

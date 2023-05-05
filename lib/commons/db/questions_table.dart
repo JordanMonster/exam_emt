@@ -8,8 +8,23 @@ class QuestionsTable {
 
   Future<QuestionModel?> selectById(Database db, String id) async {
     var map = await db.query(tableName, where: "id = '$id'");
+
     if (map.isNotEmpty) {
-      return QuestionModel.fromJson(map.first);
+      QuestionModel questionModel = QuestionModel.fromJson(map.first);
+      var choiceMap = await db.query(ChoiceTable.tableName,where: "qId = ?",whereArgs: [questionModel.id],orderBy: "RANDOM()");
+      List<ChoicesModel> choices = List.empty(growable: true);
+      List<ChoicesModel> answers = List.empty(growable: true);
+      await Future.forEach(choiceMap, (Map element) async {
+        ChoicesModel choicesModel = ChoicesModel.fromJson(element);
+        choices.add(choicesModel);
+        if(choicesModel.right == 1){
+          answers.add(choicesModel);
+        }
+      });
+      questionModel.answers = answers;
+      questionModel.choices = choices;
+
+      return questionModel;
     }
     return null;
   }

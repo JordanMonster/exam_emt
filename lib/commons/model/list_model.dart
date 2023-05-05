@@ -105,6 +105,15 @@ class ListModel {
     _count = count;
   }
 
+  ListModel.getWrong({
+    int count = 10,
+  }) {
+    _topicName = "Wrong Quiz";
+    _titleName = "Wrong Quiz";
+    _type = typeMistake;
+    _count = count;
+  }
+
   ListModel.fromJson(dynamic json) {
     _topicName = json['topicName'];
     _titleName = json['titleName'];

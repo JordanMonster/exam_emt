@@ -8,6 +8,7 @@ import 'package:questionhub/commons/db/questions_table.dart';
 import 'package:questionhub/commons/db/score_table.dart';
 import 'package:questionhub/commons/db/subjects_table.dart';
 import 'package:questionhub/commons/db/topic_table.dart';
+import 'package:questionhub/commons/log/ccy_logs.dart';
 import 'package:questionhub/commons/model/mistake_model.dart';
 import 'package:questionhub/commons/model/score_model.dart';
 import 'package:questionhub/commons/model/subjects_model.dart';
@@ -247,19 +248,18 @@ class DBManager {
 
       case ListModel.typeMistake:
         var mistakeList = await mistakesTable?.selectList(_db!,
-            where: _subjectsWhere(where: "mistakeNumb < 2"),
             orderBy: "RANDOM()",
             limit: model.count!);
 
         List<QuestionModel> questionList = List.empty(growable: true);
         await Future.forEach(mistakeList!, (element) async {
-          MistakeModel mistake = MistakeModel.fromJson(element);
           QuestionModel? question =
-              await questionTable?.selectById(_db!, mistake.questionId!);
+              await questionTable?.selectById(_db!, (element as MistakeModel).questionId!);
           if (question != null) {
             questionList.add(question);
           }
         });
+
         return questionList;
 
       case ListModel.typeQuickForStudy:
@@ -307,5 +307,9 @@ class DBManager {
 
   Future<int?> countQuestions() async {
     return await questionTable!.count(_db!, where: _subjectsWhere());
+  }
+
+  Future<int?> countMistakeQuestions() async {
+    return await mistakesTable!.count(_db!, where: _subjectsWhere());
   }
 }
