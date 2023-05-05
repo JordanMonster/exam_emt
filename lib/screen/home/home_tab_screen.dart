@@ -331,7 +331,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   }
 
   _goToWrongQuiz(){
-
     DBManager.getInstance().countMistakeQuestions().then((value) {
       List<Widget> widgets = [];
       for (int i = 1; i <= value!; i++) {
@@ -345,9 +344,10 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           "Retake Wrong Question", widgets, (int index) {
             count = index + 1;
           }, () {
-            Navigator.of(navigatorKey.currentState!.context).pushNamed(
+            Navigator.of(navigatorKey.currentState!.context)..pop()..pushNamed(
                 questionScreen,
                 arguments: ListModel.getWrong(count: count));
+            count = 1;
           });
     });
   }
