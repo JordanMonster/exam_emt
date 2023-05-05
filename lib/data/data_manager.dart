@@ -28,7 +28,7 @@ class QuestionDetailModule extends ChangeNotifier {
   final List<QuestionModel> _multiSelectList = [];
   bool _isSingleChoices = false;
 
-  var _duration = const Duration(hours: 0, minutes: 0, seconds: 0);
+  var _duration = const Duration(hours: 0, minutes: 0, seconds: 1);
   bool _isActive = true;
 
   bool _isExpandDescription = false;
@@ -59,37 +59,54 @@ class QuestionDetailModule extends ChangeNotifier {
 
   QuestionModel get question => _multiSelectList[position];
 
-  void setPosition(int position) {
+  void clear(){
+    _answered = 0;
+    _position = 0;
+    _isActive = true;
+    _isExpandDescription = false;
+    needShowPop = false;
+    timer?.cancel();
+    timer = null;
+    _secondsPassed = 0;
+    _multiSelectList.where((element) => element.userAnswer != null).forEach((element) {
+      element.setState = 0;
+      element.setIsRight = null;
+      element.setUserAnswer = null;
+    });
+    notifyListeners();
+  }
+
+  set position(int position) {
     _position = position;
     notifyListeners();
   }
 
-  void setAnswered(int answered) {
+  set answered(int answered) {
     _answered = answered;
     notifyListeners();
   }
 
-  void setSecondsPassed(int secondsPassed) {
+  set secondsPassed(int secondsPassed) {
     _secondsPassed = secondsPassed;
     notifyListeners();
   }
 
-  void setDuration(Duration duration) {
+  set duration(Duration duration) {
     _duration = duration;
     notifyListeners();
   }
 
-  void setIsSingleChoices(bool isSingle) {
-    _isSingleChoices = isSingle;
+  set isSingleChoices(bool isSingleChoices) {
+    _isSingleChoices = isSingleChoices;
     notifyListeners();
   }
 
-  void setIsActive(bool isActive) {
+  set isActive(bool isActive) {
     _isActive = isActive;
     notifyListeners();
   }
 
-  void setIsExpand(bool isExpandDescription) {
+  set isExpandDescription(bool isExpandDescription) {
     _isExpandDescription = isExpandDescription;
     notifyListeners();
   }

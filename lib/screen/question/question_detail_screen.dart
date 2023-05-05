@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:questionhub/commons/log/ccy_logs.dart';
 import 'package:questionhub/commons/model/score_model.dart';
 import 'package:questionhub/commons/routes/route_name.dart';
 import 'package:questionhub/main.dart';
@@ -9,14 +10,11 @@ import 'package:questionhub/screen/home/home_tab_screen.dart';
 import 'package:questionhub/screen/question/question_bottom_bar.dart';
 import 'package:questionhub/screen/question/question_select.dart';
 import 'package:questionhub/screen/question/question_tool_bar.dart';
-import 'package:questionhub/screen/question/widget/question_choice_card.dart';
-import 'package:questionhub/screen/widget/rich_string.dart';
 
 import '../../commons/db/db_manager.dart';
 import '../../commons/model/list_model.dart';
 import '../../commons/model/question_model.dart';
 import '../../data/data_manager.dart';
-import '../../utils/screen_utils.dart';
 
 import 'package:provider/provider.dart';
 
@@ -32,8 +30,9 @@ class QuestionDetailPage extends StatefulWidget {
 
 class _QuestionDetailPage extends State<QuestionDetailPage> {
   final QuestionDetailModule _module = QuestionDetailModule();
-
   final ScrollController _pageController = ScrollController();
+
+  int? timeCount;
 
   void _initData() async {
     DBManager.getInstance()
@@ -44,17 +43,15 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
 
         _initChoices(_module.question);
         if (_module.question.isRight == null) {
-          _module.setIsExpand(false);
+          _module.isExpandDescription = false;
         } else {
-          _module.setIsExpand(true);
+          _module.isExpandDescription = true;
         }
-
-        setState(() {});
       }
     });
-
-    if (widget.testModel.type == ListModel.typeTimeQuick) {
-      _module.setSecondsPassed(widget.testModel.count! * 60);
+    if (widget.testModel.type == ListModel.typeTimeQuick){
+      timeCount = widget.testModel.minutes! * 60;
+      timeCount = timeCount! + widget.testModel.hour! * 60 * 60;
     }
 
     _module.timer ??= Timer.periodic(_module.duration, (Timer t) {
@@ -62,9 +59,19 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
     });
   }
 
+  void handleTick() {
+    if(_module.isActive){
+      _module.secondsPassed = (_module.secondsPassed + 1);
+      if (widget.testModel.type == ListModel.typeTimeQuick &&
+          _module.secondsPassed == timeCount) {
+        _saveThisTest();
+      }
+    }
+  }
+
   //单选还是多选
   _initChoices(QuestionModel question) {
-    _module.setIsSingleChoices(!(question.answers!.length > 1));
+    _module.isSingleChoices = (!(question.answers!.length > 1));
     if (null == question.userAnswer) {
       question.setUserAnswer = [];
     }
@@ -73,14 +80,7 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
   @override
   void initState() {
     _initData();
-
     super.initState();
-  }
-
-  void handleTick() {
-    if (_module.isActive) {
-      _module.setSecondsPassed(_module.secondsPassed + 1);
-    }
   }
 
   @override
@@ -95,12 +95,21 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
             automaticallyImplyLeading: false,
             title: QuestionToolBar(
               title: widget.testModel.titleName ?? "test",
+              onRestart: () {
+                _initChoices(_module.question);
+                _pageController.jumpTo(0);
+              },
+              onSubmit: () {
+                _saveThisTest();
+              },
             ),
           ),
           body: Column(
             children: [
               Expanded(
-                  child: QuestionSelect(controller: _pageController,)),
+                  child: QuestionSelect(
+                controller: _pageController,
+              )),
               Container(
                 height: 1,
                 color: Colors.grey.shade300,
@@ -122,7 +131,6 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
         ));
   }
 
-
   _saveThisTest() async {
     ScoreModel score = await DBManager.getInstance().saveScore(
         widget.testModel.titleName!,
@@ -132,15 +140,18 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
     score.setQuestions = _module.multiSelectList;
     score.setMultiSelectListLength = _module.questionTotal;
 
+    _module.timer?.cancel();
+    _module.timer = null;
+
     Navigator.of(context)
         .pushNamed(scoreScreen, arguments: score)
         .then((value) {
-
       homeTabGlobalKey.currentState?.setState(() {});
       if (value != null) {
         value as bool;
         if (value) {
           // _clearTest();
+          Navigator.of(navigatorKey.currentState!.overlay!.context).pop();
         } else {
           Navigator.of(navigatorKey.currentState!.overlay!.context).pop();
         }
@@ -151,8 +162,8 @@ class _QuestionDetailPage extends State<QuestionDetailPage> {
   }
 
   int beginStartClock() {
-    _module.setSecondsPassed(
-        (widget.testModel.count == null ? 0 : widget.testModel.count!) * 60);
+    _module.secondsPassed =
+        ((widget.testModel.count == null ? 0 : widget.testModel.count!) * 60);
     return _module.secondsPassed;
   }
 

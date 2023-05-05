@@ -71,14 +71,14 @@ class _QuestionBottomBarState extends State<QuestionBottomBar> {
                                 index: index,
                                 state: module.multiSelectList[index].isRight,
                                 onTap: () {
-                                  module.setPosition(index);
+                                  module.position = index;
 
                                   widget.onTap?.call();
 
                                   if (module.question.isRight == null) {
-                                    module.setIsExpand(false);
+                                    module.isExpandDescription = false;
                                   } else {
-                                    module.setIsExpand(true);
+                                    module.isExpandDescription = true;
                                   }
                                 },
                               );
@@ -97,11 +97,11 @@ class _QuestionBottomBarState extends State<QuestionBottomBar> {
                                 const BorderRadius.all(Radius.circular(16)),
                             onTap: () {
                               if (module.position < module.questionTotal - 1) {
-                                module.setPosition(module.position + 1);
+                                module.position = (module.position + 1);
 
                                 widget.onNext?.call();
 
-                                module.setIsExpand(
+                                module.isExpandDescription = (
                                     module.question.isRight != null);
 
                                 _controller.jumpTo(((HYSizeFit.setRpx(26) +

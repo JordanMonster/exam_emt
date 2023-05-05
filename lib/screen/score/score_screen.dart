@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:questionhub/commons/log/ccy_logs.dart';
 import 'package:questionhub/commons/model/question_model.dart';
 import 'package:questionhub/commons/model/score_model.dart';
 import 'package:questionhub/commons/res/constant_str.dart';
@@ -62,11 +63,17 @@ class _ScorePageState extends State<ScorePage> with SingleTickerProviderStateMix
       bgColor = Colors.red.shade100;
     }
 
-    var seconds = widget.score.time! % 60;
     var hours = widget.score.time! ~/ (60 * 60);
     var minutes = widget.score.time! ~/ 60 - hours * 60;
+    var seconds = widget.score.time! % 60;
+
+
     time =
         "${hours != 0 ? "$hours H" : ""} ${minutes != 0 ? "$minutes m" : ""} ${hours != 0 ? "" : "$seconds s"} ";
+
+    CcyLogs.instance.info(widget.score.time.toString());
+    CcyLogs.instance.info(time);
+
     _titleText = "${widget.score.typeName} - $score%";
 
     _scrollController.addListener(() {

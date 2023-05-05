@@ -106,7 +106,6 @@ class DBManager {
       String topicName, List<QuestionModel> questions, int time) async {
     var batch = _db!.batch();
     int id = await scoreTable?.selectScoreId(_db!);
-    print("id = $id");
 
     int count = 0;
 
@@ -115,7 +114,6 @@ class DBManager {
         count++;
         insertMistake(element);
       }
-      print("count = $count");
     }
 
     Map<String, Object?> score = {
@@ -149,9 +147,6 @@ class DBManager {
           right++;
         }
 
-        print("right = $right");
-        print("element = ${element.toJson()}");
-
         batch.insert(NoteTable.tableName, value);
       }
     }
@@ -161,7 +156,6 @@ class DBManager {
 
     batch.insert(ScoreTable.tableName, score);
     await batch.commit(continueOnError: false);
-    print("batch.commit");
     return ScoreModel.fromJson(score);
   }
 

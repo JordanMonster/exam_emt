@@ -55,8 +55,8 @@ class _QuestionSelectState extends State<QuestionSelect>{
               isSingleChoices: module.isSingleChoices,
               callback: (int value) {
                 if (value == 0) {
-                  module.setIsExpand(true);
-                  module.setAnswered(module.answered + 1);
+                  module.isExpandDescription = true;
+                  module.answered = (module.answered + 1);
                 }
               },
             )

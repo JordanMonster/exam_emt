@@ -7,8 +7,12 @@ import 'package:provider/provider.dart';
 
 class QuestionToolBar extends StatefulWidget {
   final String title;
+  final GestureTapCallback? onRestart;
+  final GestureTapCallback? onSubmit;
 
-  const QuestionToolBar({Key? key, required this.title}) : super(key: key);
+  const QuestionToolBar(
+      {Key? key, required this.title, this.onRestart, this.onSubmit})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _QuestionToolBarState();
@@ -46,23 +50,24 @@ class _QuestionToolBarState extends State<QuestionToolBar> {
             )
           ],
         )),
-        _moreButton()
+        Consumer<QuestionDetailModule>(
+            builder: (context, module, child) => _moreButton(module))
       ],
     );
   }
 
-  Widget _moreButton() {
+  Widget _moreButton(QuestionDetailModule module) {
     return Center(
       child: Material(
         color: Colors.white,
         child: InkWell(
           borderRadius: const BorderRadius.all(Radius.circular(90)),
           onTap: () {
-            _showMoreDialog();
+            _showMoreDialog(module);
           },
           child: const Icon(
             Icons.more_horiz_sharp,
-            size: 26,
+            size: 28,
             color: Color(0xFF587183),
           ),
         ),
@@ -70,7 +75,16 @@ class _QuestionToolBarState extends State<QuestionToolBar> {
     );
   }
 
-  _showMoreDialog() {
+  _showMoreDialog(QuestionDetailModule module) {
+    module.isActive = false;
+
+    var hours = module.secondsPassed ~/ (60 * 60);
+    var minutes = module.secondsPassed ~/ 60 - hours * 60;
+    var seconds = module.secondsPassed % 60;
+
+    var time =
+        "${hours != 0 ? "$hours H" : ""} ${minutes != 0 ? "$minutes m" : ""} ${hours != 0 ? "" : "$seconds s"} ";
+
     showDialog(
         context: navigatorKey.currentState!.context,
         barrierDismissible: true,
@@ -81,7 +95,7 @@ class _QuestionToolBarState extends State<QuestionToolBar> {
                   margin: EdgeInsets.only(
                       top: HYSizeFit.sethRpx(12), right: HYSizeFit.sethRpx(12)),
                   width: HYSizeFit.sethRpx(240),
-                  height: HYSizeFit.sethRpx(240),
+                  height: HYSizeFit.sethRpx(280),
                   child: Card(
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -97,20 +111,46 @@ class _QuestionToolBarState extends State<QuestionToolBar> {
                                 fontSize: HYSizeFit.sethRpx(18)),
                           ),
                           const SizedBox(
-                            height: 24,
+                            height: 12,
                           ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.access_time,
+                                color: Colors.blue,
+                                size: 26,
+                              ),
+                              Text(time)
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          _dialogButton(Icons.home_outlined, "Main Menu", () {
+                            Navigator.of(navigatorKey.currentState!.context)
+                              ..pop()
+                              ..pop();
+                          }),
+                          _dialogButton(Icons.refresh, "Restart", () {
+                            module.clear();
+                            Navigator.of(navigatorKey.currentState!.context)
+                                .pop();
+                            widget.onRestart?.call();
+                          }),
                           _dialogButton(
-                              Icons.home_outlined, "Main Menu", () {}),
-                          _dialogButton(Icons.refresh, "Restart", () {}),
-                          _dialogButton(Icons.subdirectory_arrow_right,
-                              "Submit Test", () {}),
+                              Icons.subdirectory_arrow_right, "Submit Test",
+                              () {
+                            Navigator.of(navigatorKey.currentState!.context)
+                                .pop();
+                            widget.onSubmit?.call();
+                          }),
                         ],
                       ),
                     ),
                   ),
                 )
               ],
-            ));
+            )).then((value) => module.isActive = true);
   }
 
   _dialogButton(IconData iconData, String text, onTap) {
